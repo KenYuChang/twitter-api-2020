@@ -3,6 +3,7 @@ const router = express.Router()
 const admin = require('./modules/admin')
 const { multiUpload } = require('../middleware/multer')
 const { apiErrorHandler } = require('../middleware/error-handler')
+const messageController = require('../controllers/message-controller')
 // import controllers
 const userController = require('../controllers/user-controller')
 const tweetController = require('../controllers/tweet-controller')
@@ -48,6 +49,10 @@ router.post('/api/tweets/:id/unlike', authenticated, authenticatedUser, likeCont
 router.delete('/api/followships/:followingId', authenticated, authenticatedUser, followshipController.removeFollowship)
 router.post('/api/followships', authenticated, authenticatedUser, followshipController.addFollowship)
 router.get('/api/followships', authenticated, authenticatedUser, followshipController.getTop10Followers)
+
+// messages
+router.get('/chat', messageController.getPublicChatroom)
+
 // error handler
 router.use('/', apiErrorHandler)
 
