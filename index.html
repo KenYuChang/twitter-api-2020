@@ -58,6 +58,14 @@
     #messages>li:nth-child(odd) {
       background: #efefef;
     }
+
+    .avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-right: 0.5rem;
+    }
   </style>
 </head>
 
@@ -70,44 +78,74 @@
   <script>
     var socket = io.connect('http://localhost:3000');
 
-      var messages = document.getElementById('messages');
-      var form = document.getElementById('form');
-      var input = document.getElementById('input');
+    var messages = document.getElementById('messages');
+    var form = document.getElementById('form');
+    var input = document.getElementById('input');
+    var userData = {
+      id: 2,
+      name: 'user1',
+      email: 'user1@example.com',
+      avatar: 'https://loremflickr.com/320/240/man/?random=9.718326850466097'
+    };
+    window.user = userData;
 
-      form.addEventListener('submit', function (e) {
-        e.preventDefault();
-        if (input.value) {
-          socket.emit('chat message', input.value);
-          input.value = '';
-        }
-      });
-
-      // 顯示聊天訊息
-      function displayMessage(msg) {
-        var item = document.createElement('li');
-        item.textContent = msg;
-        messages.appendChild(item);
-        window.scrollTo(0, document.body.scrollHeight);
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      if (input.value) {
+        var message = {
+          userId: userData.id,
+          name: userData.name,
+          avatar: userData.avatar,
+          content: input.value,
+          timestamp: new Date()
+        };
+        socket.emit('chat message', JSON.stringify(message));
+        input.value = '';
       }
+    });
 
-      // WebSocket 連線成功後，請求聊天訊息的資料
-      socket.on('connect', function () {
-        socket.emit('get chat messages');
+    // WebSocket 连接成功后请求聊天历史记录
+    socket.on('connect', function () {
+      socket.emit('get chat messages');
+    });
+
+    // 显示聊天消息
+    function displayMessage(message) {
+      var item = document.createElement('li');
+
+      var avatar = document.createElement('img');
+      avatar.src = message.avatar;
+      avatar.alt = 'Avatar';
+      avatar.classList.add('avatar');
+      item.appendChild(avatar);
+
+      var name = document.createElement('span');
+      name.textContent = message.name;
+      item.appendChild(name);
+
+      var content = document.createElement('span');
+      content.textContent = message.msg || message.content;
+      item.appendChild(content);
+
+      var time = document.createElement('span');
+      time.textContent = message.time || new Date().toLocaleTimeString();
+      item.appendChild(time);
+
+      messages.appendChild(item);
+      window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    // 接收聊天历史记录
+    socket.on('chat messages', function (messages) {
+      messages.forEach(function (message) {
+        displayMessage(message);
       });
+    });
 
-      // 接收歷史聊天訊息
-      socket.on('chat messages', function (messages) {
-        console.log(messages);
-        messages.forEach(function (message) {
-          displayMessage(message.msg);
-        });
-      });
-
-      // 接收新的聊天訊息
-      socket.on('chat message', function (msg) {
-        displayMessage(msg);
-      });
-
+    // 接收新的聊天消息
+    socket.on('chat message', function (message) {
+      displayMessage(message);
+    });
   </script>
 </body>
 

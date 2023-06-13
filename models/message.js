@@ -10,7 +10,8 @@ module.exports = (sequelize, DataTypes) => {
   Message.init(
     {
       userId: DataTypes.INTEGER,
-      msg: DataTypes.TEXT
+      msg: DataTypes.TEXT,
+      time: DataTypes.TEXT
     },
     {
       sequelize,

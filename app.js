@@ -2,7 +2,7 @@ if (process.env.NODE_ENV !== 'production') {
   require('dotenv').config()
 }
 const express = require('express')
-const { webSocketPubic } = require('./websocket')
+const { webSocketPublic } = require('./websocket')
 
 const routes = require('./routes')
 const methodOverride = require('method-override')
@@ -22,10 +22,9 @@ app.use(methodOverride('_method'))
 
 // web socket
 app.get('/chat', (req, res) => {
-  // const userId = req.user.id
-  const userId = 1
+  // const user = req.user.id
   res.sendFile(__dirname + '/index.html')
-  webSocketPubic(server, userId)
+  webSocketPublic(server)
 })
 
 app.use(routes)
