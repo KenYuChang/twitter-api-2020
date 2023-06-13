@@ -66,6 +66,12 @@
       object-fit: cover;
       margin-right: 0.5rem;
     }
+
+    /* 系統訊息樣式 */
+    .system-message {
+      background-color: #f2f2f2;
+      font-style: italic;
+    }
   </style>
 </head>
 
@@ -88,6 +94,9 @@
       avatar: 'https://loremflickr.com/320/240/man/?random=9.718326850466097'
     };
     window.user = userData;
+    displayEnterUser({
+      content: userData.name + ' has entered the chat room.',
+    });
 
     form.addEventListener('submit', function (e) {
       e.preventDefault();
@@ -97,7 +106,7 @@
           name: userData.name,
           avatar: userData.avatar,
           content: input.value,
-          timestamp: new Date()
+          timestamp: new Date().toLocaleTimeString()
         };
         socket.emit('chat message', JSON.stringify(message));
         input.value = '';
@@ -130,6 +139,17 @@
       var time = document.createElement('span');
       time.textContent = message.time || new Date().toLocaleTimeString();
       item.appendChild(time);
+
+      messages.appendChild(item);
+      window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function displayEnterUser(message) {
+      var item = document.createElement('li');
+
+      var content = document.createElement('span');
+      content.textContent = message.msg || message.content;
+      item.appendChild(content);
 
       messages.appendChild(item);
       window.scrollTo(0, document.body.scrollHeight);

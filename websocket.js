@@ -18,14 +18,13 @@ const webSocketController = {
       socket.on('chat message', (message) => {
         try {
           const { userId, name, avatar, content, timestamp } = JSON.parse(message)
-          const time = webSocketController.formatTime(timestamp)
           console.log('收到訊息:', content)
           const newMessage = {
             userId,
             name,
             avatar,
             content,
-            time
+            time: timestamp
           }
           socket.broadcast.emit('chat message', newMessage)
           socket.emit('chat message', newMessage)
@@ -55,14 +54,6 @@ const webSocketController = {
       .catch((err) => {
         console.error('Error saving message:', err)
       })
-  },
-
-  formatTime (timestamp) {
-    const date = new Date(timestamp)
-    const hours = date.getHours()
-    const minutes = date.getMinutes()
-    const formattedTime = hours.toString().padStart(2, '0') + ':' + minutes.toString().padStart(2, '0')
-    return formattedTime
   }
 }
 
