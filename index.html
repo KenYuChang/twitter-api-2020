@@ -8,6 +8,27 @@
       margin: 0;
       padding-bottom: 3rem;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      display: flex;
+    }
+
+    #user-list {
+      flex-basis: 20%;
+      background-color: #f2f2f2;
+      padding: 1rem;
+      list-style-type: none;
+    }
+
+    #user-list h2 {
+      margin-top: 0;
+    }
+
+    #user-list .user-count {
+      margin-bottom: 1rem;
+      color: #666;
+    }
+
+    #messages-container {
+      flex-basis: 80%;
     }
 
     #form {
@@ -29,7 +50,9 @@
       flex-grow: 1;
       border-radius: 2rem;
       margin: 0.25rem;
+      width: 100%;
     }
+
 
     #input:focus {
       outline: none;
@@ -76,14 +99,23 @@
 </head>
 
 <body>
-  <ul id="messages"></ul>
-  <form id="form" action="">
-    <input id="input" autocomplete="off" /><button>Send</button>
-  </form>
+  <div id="user-list">
+    <h2>上線的使用者</h2>
+    <div id="user-count" class="user-count"></div>
+  </div>
+  <div id="messages-container">
+    <h2>公開聊天室</h2>
+    <ul id="messages"></ul>
+    <form id="form" action="">
+      <input id="input" autocomplete="off" /><button>Send</button>
+    </form>
+  </div>
   <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
   <script>
     var socket = io.connect('http://localhost:3000');
 
+    var userList = document.getElementById('user-list');
+    var userCount = document.getElementById('user-count');
     var messages = document.getElementById('messages');
     var form = document.getElementById('form');
     var input = document.getElementById('input');
@@ -94,6 +126,7 @@
       avatar: 'https://loremflickr.com/320/240/man/?random=9.718326850466097'
     };
     window.user = userData;
+    displayUser(userData);
     displayEnterUser({
       content: userData.name + ' has entered the chat room.',
     });
@@ -155,6 +188,23 @@
       window.scrollTo(0, document.body.scrollHeight);
     }
 
+    function displayUser(userData) {
+      var item = document.createElement('li');
+
+      var avatar = document.createElement('img');
+      avatar.src = userData.avatar;
+      avatar.alt = 'Avatar';
+      avatar.classList.add('avatar');
+      item.appendChild(avatar);
+
+      var name = document.createElement('span');
+      name.textContent = userData.name;
+      item.appendChild(name);
+
+      userList.appendChild(item);
+    }
+
+
     // 接收聊天历史记录
     socket.on('chat messages', function (messages) {
       messages.forEach(function (message) {
@@ -166,6 +216,24 @@
     socket.on('chat message', function (message) {
       displayMessage(message);
     });
+
+    socket.on('disconnect', function () {
+      displayLeaveUser({
+        content: userData.name + ' has left the chat room.',
+      });
+    });
+
+    function displayLeaveUser(message) {
+      var item = document.createElement('li');
+
+      var content = document.createElement('span');
+      content.textContent = message.msg || message.content;
+      item.appendChild(content);
+
+      messages.appendChild(item);
+      window.scrollTo(0, document.body.scrollHeight);
+    }
+
   </script>
 </body>
 
