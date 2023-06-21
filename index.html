@@ -99,10 +99,12 @@
 </head>
 
 <body>
+  <!-- 左側上線者區塊 -->
   <div id="user-list">
     <h2>上線的使用者</h2>
     <div id="user-count" class="user-count"></div>
   </div>
+  <!-- 右側聊天內容區塊 -->
   <div id="messages-container">
     <h2>公開聊天室</h2>
     <ul id="messages"></ul>
@@ -110,6 +112,8 @@
       <input id="input" autocomplete="off" /><button>Send</button>
     </form>
   </div>
+
+  <!-- 載入 socket.io.min.js -->
   <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
   <script>
     var socket = io.connect('http://localhost:3000');
@@ -119,18 +123,45 @@
     var messages = document.getElementById('messages');
     var form = document.getElementById('form');
     var input = document.getElementById('input');
+    // 預設前端已經抓到一位當前使用者的資料
     var userData = {
       id: 2,
       name: 'user1',
       email: 'user1@example.com',
       avatar: 'https://loremflickr.com/320/240/man/?random=9.718326850466097'
     };
-    window.user = userData;
+
+    // 使用者進入聊天室
     displayUser(userData);
     displayEnterUser({
       content: userData.name + ' has entered the chat room.',
     });
 
+    // 連接成功後請求資料庫抓歷史訊息
+    socket.on('connect', function () {
+      socket.emit('get chat messages');
+    });
+
+    // 接收歷史聊天記錄後顯示出來
+    socket.on('chat messages', function (messages) {
+      messages.forEach(function (message) {
+        displayMessage(message);
+      });
+    });
+
+    // 接收新的聊天消息
+    socket.on('chat message', function (message) {
+      displayMessage(message);
+    });
+
+    // 使用者離開聊天室
+    socket.on('disconnect', function () {
+      displayLeaveUser({
+        content: userData.name + ' has left the chat room.',
+      });
+    });
+
+    // 監聽使用者發送訊息
     form.addEventListener('submit', function (e) {
       e.preventDefault();
       if (input.value) {
@@ -142,16 +173,12 @@
           timestamp: new Date().toLocaleTimeString()
         };
         socket.emit('chat message', JSON.stringify(message));
+        // 聊天室輸入框清空
         input.value = '';
       }
     });
 
-    // WebSocket 连接成功后请求聊天历史记录
-    socket.on('connect', function () {
-      socket.emit('get chat messages');
-    });
-
-    // 显示聊天消息
+    // 四種 render 聊天內容的形式：displayMessage, displayEnterUser, displayUser, displayLeaveUser
     function displayMessage(message) {
       var item = document.createElement('li');
 
@@ -203,25 +230,6 @@
 
       userList.appendChild(item);
     }
-
-
-    // 接收聊天历史记录
-    socket.on('chat messages', function (messages) {
-      messages.forEach(function (message) {
-        displayMessage(message);
-      });
-    });
-
-    // 接收新的聊天消息
-    socket.on('chat message', function (message) {
-      displayMessage(message);
-    });
-
-    socket.on('disconnect', function () {
-      displayLeaveUser({
-        content: userData.name + ' has left the chat room.',
-      });
-    });
 
     function displayLeaveUser(message) {
       var item = document.createElement('li');

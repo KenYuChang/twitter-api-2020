@@ -4,7 +4,7 @@ const messageController = require('./controllers/message-controller')
 
 const webSocketController = {
   // 公開聊天室
-  webSocketPublic (server) {
+  webSocketPublic(server) {
     const io = socketIO(server)
     io.setMaxListeners(100)
 
@@ -40,7 +40,7 @@ const webSocketController = {
     })
   },
 
-  saveMessage (messageData) {
+  saveMessage(messageData) {
     const { userId, content, time } = messageData
 
     return Message.create({
